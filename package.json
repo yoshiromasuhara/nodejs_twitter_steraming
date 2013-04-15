@@ -1,0 +1,14 @@
+{
+  "name": "nodejs_twitter_steraming",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "3.1.1",
+    "ejs": "*",
+    "socket.io": "0.9.6"
+  },
+  "engines": {
+    "node": "0.8.x",
+    "npm": "1.1.x"
+  }
+}

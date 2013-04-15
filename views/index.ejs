@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Node.js Twitter Streaming API Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+<style type="text/css">
+* {
+    margin: 0;
+    padding: 0;
+}
+
+div.media{
+    border-bottom:1px solid #ddd;
+    background-color: #ffffff;
+    margin:0;
+    padding:10px;
+    font-size:10pt;
+    line-height: 15px;
+}
+
+pre {
+    padding:0;
+    margin:0;
+    border:none;
+    background-color:#ffffff;
+}
+span.tweet_time,span.tweet_place{
+    margin:0px 20px;
+    color:#999999;
+}
+</style>
+</head>
+<body>
+    <h1>Node.js Twitter Streaming API Sample</h1>
+    <div id="tweetWrap">
+        <script id="tweet" type="text/x-jquery-tmpl">
+            <div class="media" id="${feedId}">
+                <a class="pull-left" href="javascript:void(0)">
+                    <img class="media-object" width="45px" src="${userImg}" />
+                </a>
+                <div class="media-body">
+                    <h5 class="media-heading">${userNm}</h5>
+                    <pre> ${body}</pre>
+                    <span class="tweet_time">${time}</span>
+                    <span class="tweet_place">${place}</span>
+                </div>
+            </div>
+        </script>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+    <script>
+    $(function(){
+        // ioオブジェクトチェック
+        if (typeof io=="undefined") {
+            $("#tweetWrap").html("<b>ioオブジェクトが作成できません[socket.io.jsエラー]</b>");
+            return;
+        }
+
+        //サーバーに接続
+        var socket = io.connect('/', {
+            'reconnect': true,
+            'reconnection delay': 1000,
+            'reconnection limit': 1000,
+            'max reconnection attempts': Infinity,
+        });
+
+        //ツイート受信のタイミングでフィードを追加
+        socket.on('tweet', function(tweet) {
+           var tweet ={
+                feedId:tweet.id,
+                userImg:tweet.img,
+                userNm:tweet.name,
+                body:tweet.text,
+                time:tweet.time,
+                place:(typeof tweet.place!="undefined")?tweet.place.full_name:""
+            };
+            //受信フィードを表示
+            $("#tweet").tmpl(tweet).prependTo("#tweetWrap").hide().show("fast");
+            //15件を超えたらフィードを削除
+            (15<$("#tweetWrap").children().length) && $("div.media:last").remove();
+        });
+    });
+    </script>
+
+</body>
+</html>
